@@ -1,58 +1,21 @@
-var http = require("http");
-var mysql = require('mysql');
+const express=require('express');
+//const bodyParser=require('body-parser');
 
-var con = mysql.createConnection({
-    host: "remotemysql.com",
-    port:"3306",
-    user: "sssQw0eC4y",
-    password: "6om4HGi5cb",
-    database:"sssQw0eC4y",
-  });
-
-  con.connect(function(err) {
-    if (err) throw err; 
-    console.log("Connected!");
-    //create table
-    // var sql = "CREATE TABLE customers (name VARCHAR(255), address VARCHAR(255))";
-    // con.query(sql, function (err, result) {
-    //     if (err) throw err;
-    //     console.log("Table created");
-    // });
-
-    //insert
-    // var  sql = "INSERT INTO customers (name, address) VALUES ('Company Inc', 'Highway 37')";
-    // con.query(sql, function (err, result) {
-    //     if (err) throw err;
-    //     console.log("1 record inserted");
-    // });
-
-    // con.query("SELECT * FROM customers", function (err, result, fields) {
-    // if (err) throw err;
-    // console.log(result);
-    // });
-
-  });
-
+const authRoute=require('./routes/auth');
+//var path=require('./util/path');
+//var Sequelize = require('./util/database');
 const PORT = process.env.PORT || 5000;
-
-http.createServer(function (request, response) {
-   
-   response.writeHead(200, {'Content-Type': 'text/plain'});
-   
-   // Send the response body as "Hello World"
-   con.query("SELECT * FROM customers", function (err, result, fields) {
-    if (err) throw err; 
-    response.end(result[0]["name"]);
-        console.log(result);
-        for(var i=0;i<result.length;i++){
-            console.log(result[i]["name"]);
-        }
-    });
-   
-   //response.end(result[i]["name"]);
+const app=express();
 
 
-}).listen(PORT);
+app.use(express.json());
 
-// Console will print the message
+app.use('/auth',authRoute);
+
+app.post((req,res,next)=>{    
+    res.status(404).send('<h1>Page not found.</h1>');
+});
+
+app.listen(PORT);
+ 
 console.log('Server running at http://127.0.0.1:'+PORT+'/');
