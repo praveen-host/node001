@@ -8,11 +8,11 @@ const user= require('../../models/user');
 
 exports.isUserExist=(req,res,next)=>{
     
-    user.findOne({ where: {emailId: req.body.emailId} }).then(user => {        
+    user.findOne({ where: {emailId: req.body.userName } }).then(user => {        
         if (user) {
             res.status(400).json({message:'E-mail already in use'});
         }
-        res.status(200).json({message:'EmailId is avalable'});
+        res.status(200).json({hasError:false,statusCode:200,message:"User not exist"});
     }).catch((error)=>{
         res.status(400).json(error);
     });
@@ -20,11 +20,14 @@ exports.isUserExist=(req,res,next)=>{
 
 exports.sendOtpToVerfiyEmail=(req,res,next)=>{
     var otp=Math.floor( Math.random() * (9999 - 1000) + 1000);
-
+    var userInfo=req.body;
+    userInfo['otp']=otp;
     var body = getMailBody(otp);
+
     mail.SendEmail(req.body.emailId,"ShopOnline - OTP to verifiy your emailId",body)
     .then(()=>{
-        myCache.set(req.body.emailId,otp,300);
+        myCache.set(userInfo.emailId,JSON.stringify(userInfo),300);
+        console.log(myCache.get(userInfo.emailId));
         res.status(200).json({ statusCode:200, hasError: false, message : "OTP is sent to "+req.body.emailId });
     })
     .catch((error)=>{
@@ -37,26 +40,32 @@ exports.verifyOtpAndCreateUser=(req,res,next)=>{
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
-    }
-    if(myCache.has(req.body.emailId)){
-        var otp=myCache.get(req.body.emailId);
-        if(req.body.otp==otp){
-            user.create(req.body)
+    } 
+    if(myCache.has(req.body.userName)){
+        var userInfo=JSON.parse( myCache.get(req.body.userName));
+        
+        if(req.body.otp==userInfo.otp){
+            delete userInfo.otp;
+            userInfo['status']='A';
+            user.create(userInfo)
             .then((d)=>{        
-                res.status(200).json({hasError:false,token:"",message:"Invalid OTP"  })
+                res.status(200).json({hasError:false,token:"",error:""  });
             })
             .catch((err)=>{
-                res.json(err);     
+                console.log(err);
+                res.status(401).json({hasError:true,token:"",error:err });     
             });
         }
-        res.status(401).json({hasError:true,token:"",message:"Invalid OTP"  })
+        else
+            res.status(401).json({hasError:true,token:"",message:"Invalid OTP"  })
     }
-    res.status(401).json({hasError:true,token:"",message:"Invalid OTP"  })
+    else
+        res.status(401).json({hasError:true,token:"",message:"Invalid OTP"  })
     
 }
 
 exports.signin=(req,res,next)=>{
-console.log('TEST');
+
     user.findOne({ where: {emailId: req.body.emailId} }).then(user => {        
         
         if (user) {
