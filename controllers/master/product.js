@@ -9,7 +9,10 @@ const sequelize = require('../../util/database');
 
 exports.GetProduct=(req,res,next)=>{
      
-    product.findAll()
+    product.findAll({
+        attributes:['productCode','skuName','uomSymbol','brand','category','shortDescription','longDescription','hsnCode'],
+        include:{model:productImage,attributes:['imageId','fileName']}
+    })
     .then((d)=>{       
         console.log(d); 
         res.status(200).json(d);
@@ -51,7 +54,6 @@ exports.AddProduct=(req,res,next)=>{
                             })
                             .catch((error)=>{
                                 t.rollback();
-                                console.log('Error............');
                                 console.log(error);
                                 res.status(401).json({hasError:true,errors:error });  
                             });
@@ -67,15 +69,10 @@ exports.AddProduct=(req,res,next)=>{
                    
     });
 
-    // console.log(req.body);
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return res.status(401).json({ hasError:true,errors: errors.array() });
-    // } 
- 
 }
 
 exports.updateProduct=(req,res,next)=>{
+    console.log('Test...');
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
         product.update(
@@ -83,7 +80,47 @@ exports.updateProduct=(req,res,next)=>{
             {where: {productCode:fields.productCode}}
         )
         .then((d)=>{ 
-            res.status(200).json({hasError:false});     
+            var oldPath = files.Image.path;
+            var ext=files.Image.name.split('.'),
+                fileName=Date.now()+'.'+ ext[ext.length-1];
+            
+            var newPath = path.join(appRoot, 'assets/images/product') + '/'+fileName;
+
+            var rawData = fs.readFileSync(oldPath);
+        
+            fs.writeFile(newPath, rawData, function(err){
+                if(err) console.log(err)
+                else{ 
+                    if(fields.imageId!=-1){ 
+                        productImage.update(
+                            {fileName:fileName},
+                            {where: {imageId:fields.imageId}}
+                        )
+                        .then((x)=>{
+                            console.log('Update success');
+                            res.status(200).json({hasError:false, message:"Product is update successfully."});
+                        })
+                        .catch((error)=>{
+                            console.log(error);
+                            res.status(401).json({hasError:true,errors:error });  
+                        });
+                    }
+                    else{
+                        productImage.create({productCode:fields.productCode,fileName:fileName})
+                        .then((x)=>{
+                            res.status(200).json({hasError:false, message:"Product is created successfully."});
+                        })
+                        .catch((error)=>{
+                            console.log(error);
+                            res.status(401).json({hasError:true,errors:error });  
+                        });
+                    }
+
+
+                }
+            });
+
+         //   res.status(200).json({hasError:false});     
         })
         .catch((error)=>{
             console.log(error);
@@ -94,15 +131,15 @@ exports.updateProduct=(req,res,next)=>{
 }
 
 exports.getProductByProductCode=(req,res,next)=>{
-    product.findOne({ where: {productCode: req.params.productCode} })
+    product.findOne({ 
+        where: {productCode: req.params.productCode},include:{model:productImage}
+     })
     .then((d)=>{       
-        console.log(d); 
         res.status(200).json(d);
     })
     .catch((err)=>{
         console.log(err);
         res.status(401).json({hasError:true,errors:err });     
     });
-    console.log('Inside getProductByProductCode'+req.params.productCode);
 }
 

@@ -1,7 +1,7 @@
 const express=require('express'); 
 const authRoute=require('./routes/auth'); 
 const masterRoute=require('./routes/master'); 
-
+const fk=require('./models/fk');
 
 var path = require('path');
 global.appRoot = path.resolve(__dirname);
@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 5000;
 var cors = require('cors');
 const app=express();
 app.use(cors());
+app.use('/assets',express.static('assets'));
 
 app.use(express.json());
 
