@@ -85,7 +85,7 @@ exports.updateProduct=(req,res,next)=>{
         .then((d)=>{ 
            // res.status(200).json({hasError:false, message:"Product is update successfully."});
             //Uncomment to save image file 
-            
+            console.log(files);
             var oldPath = files.Image.path;
             var ext=files.Image.name.split('.'),
                 fileName=Date.now()+'.'+ ext[ext.length-1];
