@@ -1,3 +1,4 @@
+var crypto    = require('crypto');
 const { body, validationResult } = require('express-validator');
 var jwt = require('jsonwebtoken');
 
@@ -100,6 +101,7 @@ exports.validateUser=(req,res,next)=>{
         title:'Hello World'
     });
 }
+ 
 
 getJSONWebToken=(user,minute)=>{
     

@@ -9,14 +9,6 @@ const uom= require('../../models/uom');
 //     return response;    
 // }
 
-// [HttpGet]    
-// public IActionResult getUom()    
-// {                
-//     var uomObj=new DbAccess.Uom();
-//     var uoms = uomObj.getUom();    
-//     var response=Ok(uoms);    
-//     return response;    
-// }   
 
 
 exports.GetUom=(req,res,next)=>{

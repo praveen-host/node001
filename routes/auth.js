@@ -14,8 +14,7 @@ router.use('/isUserExist',auth.isUserExist);
 
 router.use('/SendOtpToVerfiyEmail',auth.sendOtpToVerfiyEmail);
  
-router.post('/verifyOtpAndCreateUser',
-   
+router.post('/verifyOtpAndCreateUser',   
     auth.verifyOtpAndCreateUser
 );
 router.post('/login',
