@@ -86,8 +86,8 @@ exports.updateProduct=(req,res,next)=>{
            // res.status(200).json({hasError:false, message:"Product is update successfully."});
             //Uncomment to save image file 
             console.log(files);
-            var oldPath = files.Image.path;
-            var ext=files.Image.name.split('.'),
+            var oldPath = files.avatar.path;
+            var ext=files.avatar.name.split('.'),
                 fileName=Date.now()+'.'+ ext[ext.length-1];
             
             var newPath = path.join(appRoot, 'assets/images/product') + '/'+fileName;
