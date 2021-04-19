@@ -8,111 +8,46 @@ const orderDetail= require('../../models/orderDetails');
 const sequelize = require('../../util/database');
 
 exports.createOrder=(req,res,next)=>{
-    console.log(req.body);
-    res.status(200).json({hasError:false, message:"Product is created successfully."});
-    /*
+    
+    var orderData=req.body;
+    var orderDetailData=orderData.orderDetals;     
+    
     sequelize.transaction().then(function(t){
-        order.create(req.body,{transaction:t})
-        .then((d)=>{
 
-        })
-        .catch((error)=>{
+        order.create({orderDate:(new Date()).toISOString(), sellerUserId:1,buyerUserId:1,orderStatus:'S',orderValue:orderData.orderValue},{transaction:t})
+        .then((result)=>{
+            orderDetailData=orderDetailData.map(d=>({...d,orderId:result.orderId}));
 
-        });
-    });*/
-
-}
-
-/*
-exports.updateProduct=(req,res,next)=>{
-    console.log('Test...');
-    var form = new formidable.IncomingForm();
-    form.parse(req, function(err, fields, files) {
-        product.update(
-            fields,
-            {where: {productCode:fields.productCode}}
-        )
-        .then((d)=>{ 
-            res.status(200).json({hasError:false, message:"Product is update successfully."});
-            //Uncomment to save image file 
-            /*
-            var oldPath = files.Image.path;
-            var ext=files.Image.name.split('.'),
-                fileName=Date.now()+'.'+ ext[ext.length-1];
-            
-            var newPath = path.join(appRoot, 'assets/images/product') + '/'+fileName;
-
-            var rawData = fs.readFileSync(oldPath);
-        
-            fs.writeFile(newPath, rawData, function(err){
-                if(err) console.log(err)
-                else{ 
-                    if(fields.imageId!=-1){ 
-                        productImage.update(
-                            {fileName:fileName},
-                            {where: {imageId:fields.imageId}}
-                        )
-                        .then((x)=>{
-                            console.log('Update success');
-                            res.status(200).json({hasError:false, message:"Product is update successfully."});
-                        })
-                        .catch((error)=>{
-                            console.log(error);
-                            res.status(401).json({hasError:true,errors:error });  
-                        });
-                    }
-                    else{
-                        productImage.create({productCode:fields.productCode,fileName:fileName})
-                        .then((x)=>{
-                            res.status(200).json({hasError:false, message:"Product is created successfully."});
-                        })
-                        .catch((error)=>{
-                            console.log(error);
-                            res.status(401).json({hasError:true,errors:error });  
-                        });
-                    }
-
-
-                }
-            });
-
+            console.log(orderDetailData);
+            orderDetail.bulkCreate(orderDetailData,{transaction:t})
+            .then(()=>{
+                t.commit();
+                res.status(200).json({hasError:false, message:"Order is created successfully."});
+            }) 
             
         })
         .catch((error)=>{
+            t.rollback();
             console.log(error);
-            res.status(401).json({hasError:true,errors:error });         
-        });    
+            res.status(401).json({hasError:false, message:error.message});
+        });
     });
 
 }
 
-exports.getProductByProductCode=(req,res,next)=>{
-    product.findOne({ 
-        where: {productCode: req.params.productCode},include:{model:productImage}
-     })
-    .then((d)=>{       
-        res.status(200).json(d);
+exports.getOrder=(req,res,next)=>{
+console.log(res.body);
+    sequelize.query(
+    'select orderId,orderDate orderPalcedOn,orderDate scheduledFor, orderStatus,orderValue,orderValue  finalAmountToPay   from orders where sellerUserId=:userName and orderDate>=:fromDate and orderDate<=:toDate',
+        { replacements: { userName: req.userInfo.userId,fromDate:'2021-04-01',toDate:'2021-04-30' }, type: sequelize.QueryTypes.SELECT }
+    )
+    .then((d)=> {
+        console.log(d);
+
+        res.status(200).json({'totalRecords':100,'orderList':d});
+      // res.status(200).json(d);
     })
-    .catch((err)=>{
-        console.log(err);
-        res.status(401).json({hasError:true,errors:err });     
+    .catch((error)=>{
+        console.log(error);
     });
 }
-
-
-exports.GetProduct=(req,res,next)=>{
-     
-    product.findAll({
-        attributes:['productCode','skuName','uomSymbol','brand','category','shortDescription','longDescription','hsnCode'],
-        include:{model:productImage,attributes:['imageId','fileName']}
-    })
-    .then((d)=>{       
-        console.log(d); 
-        res.status(200).json(d);
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.status(401).json({hasError:true,errors:err });     
-    });
-}
-*/

@@ -1,7 +1,8 @@
 const express=require('express'); 
-const authRoute=require('./routes/auth'); 
-const masterRoute=require('./routes/master'); 
-const transactions=require('./routes/transactions');
+const sockets=require('./util/socket');
+
+const mainRoute=require('./routes/mainroute');
+ 
 
 const fk=require('./models/fk');
 
@@ -17,14 +18,22 @@ app.use('/assets',express.static('assets'));
 
 app.use(express.json());
 
-app.use('/auth',authRoute);
-app.use('/master',masterRoute);
-app.use('/salesorder',transactions);
+app.use('/',mainRoute);
 
-app.use((req,res,next)=>{    
-    res.status(404).send('<h1>Page not found.</h1>');
+/*########## sockets ################*/
+const http = require('http');
+const server = http.createServer(app);
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => { 
+  sockets['abc@gmail.com']=socket;
+  console.log('a user connected');
+  sockets["abc@gmail.com"].emit('chat message', 'Hello Message 3'); 
 });
 
-app.listen(PORT);
  
+server.listen(PORT); 
 console.log('Server running at http://127.0.0.1:'+PORT+'/');
+
+
+

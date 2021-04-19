@@ -104,8 +104,8 @@ exports.validateUser=(req,res,next)=>{
  
 
 getJSONWebToken=(user,minute)=>{
-    
-     var token= jwt.sign({foo:'bar'}, "ThisismySecretKey");
+    delete user.password;
+     var token= jwt.sign(user, "ThisismySecretKey");
      
      return token;
 }

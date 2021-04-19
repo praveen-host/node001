@@ -1,3 +1,4 @@
+const sockets=require('../../util/socket');
 const { body, validationResult } = require('express-validator');
 const formidable = require('formidable')
 
@@ -36,9 +37,9 @@ exports.AddProduct=(req,res,next)=>{
             sequelize.transaction().then(function(t){
                 product.create(fields,{transaction:t})
                 .then((d)=>{   
-                    t.commit();
-                    res.status(200).json({hasError:false, message:"Product is created successfully."});
-                    /*
+                   // t.commit();
+                  //  res.status(200).json({hasError:false, message:"Product is created successfully."});
+                    
                     var oldPath = files.Image.path;
                     var ext=files.Image.name.split('.'),
                         fileName=Date.now()+'.'+ ext[ext.length-1];
@@ -61,7 +62,7 @@ exports.AddProduct=(req,res,next)=>{
                                 res.status(401).json({hasError:true,errors:error });  
                             });
                         }
-                    });*/
+                    });
                 });                    
 
             }).then(function(result){
@@ -75,7 +76,7 @@ exports.AddProduct=(req,res,next)=>{
 }
 
 exports.updateProduct=(req,res,next)=>{
-    console.log('Test...');
+    
     var form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, files) {
         product.update(
@@ -83,11 +84,15 @@ exports.updateProduct=(req,res,next)=>{
             {where: {productCode:fields.productCode}}
         )
         .then((d)=>{ 
-           // res.status(200).json({hasError:false, message:"Product is update successfully."});
-            //Uncomment to save image file 
+
+            if(files.Image==null) {
+                sockets["abc@gmail.com"].emit('product', 'Product updated'); 
+                res.status(200).json({hasError:false, message:"Product is created successfully."});
+            }
+
             console.log(files);
-            var oldPath = files.avatar.path;
-            var ext=files.avatar.name.split('.'),
+            var oldPath = files.Image.path;
+            var ext=files.Image.name.split('.'),
                 fileName=Date.now()+'.'+ ext[ext.length-1];
             
             var newPath = path.join(appRoot, 'assets/images/product') + '/'+fileName;
@@ -104,29 +109,19 @@ exports.updateProduct=(req,res,next)=>{
                         )
                         .then((x)=>{
                             console.log('Update success');
+                            sockets["abc@gmail.com"].emit('product', 'Product updated'); 
                             res.status(200).json({hasError:false, message:"Product is update successfully."});
-                        })
-                        .catch((error)=>{
-                            console.log(error);
-                            res.status(401).json({hasError:true,errors:error });  
                         });
                     }
                     else{
                         productImage.create({productCode:fields.productCode,fileName:fileName})
                         .then((x)=>{
+                            sockets["abc@gmail.com"].emit('product', 'Product updated'); 
                             res.status(200).json({hasError:false, message:"Product is created successfully."});
-                        })
-                        .catch((error)=>{
-                            console.log(error);
-                            res.status(401).json({hasError:true,errors:error });  
                         });
                     }
-
-
                 }
-            });
-
-            
+            });            
         })
         .catch((error)=>{
             console.log(error);

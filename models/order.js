@@ -21,8 +21,7 @@ const Order = sequelize.define('order', {
     allowNull: false
   },
   orderAcceptedDate: {
-    type: Sequelize.DATE,
-    allowNull: false
+    type: Sequelize.DATE
   },   
   orderDispatchedDate: {
     type: Sequelize.DATE
@@ -36,14 +35,11 @@ const Order = sequelize.define('order', {
     defaultValue:'S'
   },   
   paymentStatus: {
-    type: Sequelize.STRING,
-    allowNull: false
+    type: Sequelize.STRING
   },   
   paymentId: {
-    type: Sequelize.STRING,
-    allowNull: false
+    type: Sequelize.STRING
   } 
 });
-
 module.exports = Order; 
  
